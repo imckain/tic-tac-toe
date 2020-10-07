@@ -5,6 +5,7 @@
 
 body {
     font-family: 'Helvetica';
+    color: #1a535c;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -14,6 +15,7 @@ body {
 
 header, footer {
     display: flex;
+    align-items: center;
     background-color: #1a535c;
     flex-direction: row;
     color: #f7fff7;

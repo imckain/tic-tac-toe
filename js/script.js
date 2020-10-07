@@ -1,12 +1,14 @@
-console.log('JQ is loaded ', $);
 // 1) Define required constants:
 //     1.1) Define a colors object with keys of 'null' (when the square is empty), and players 1 & -1. The value assigned to each key represents the color to display for an empty square (null), player 1 and player -1.
 //     1.2) Define the 8 possible winning combinations, each containing three indexes of the board that make a winner if they hold the same player value.
+
 // 2) Define required variables used to track the state of the game:
 //     2.1) Use a board array to represent the squares.    2.2) Use a turn variable to remember whose turn it is.
 //     2.3) Use a winner variable to represent three different possibilities - player that won, a tie, or game in play.
+
 // 3) Store elements on the page that will be accessed in code more than once in variables to make code more concise, readable and performant:
 //     3.1) Store the 9 elements that represent the squares on the page.
+
 // 4) Upon loading the app should:
 //     4.1) Initialize the state variables:
 //         4.1.1) Initialize the board array to 9 nulls to represent empty squares. The 9 elements will "map" to each square, where index 0 maps to the top-left square and index 8 maps to the bottom-right square.
@@ -22,6 +24,7 @@ console.log('JQ is loaded ', $);
 //             4.2.2.2) If winner is equal to 'T' (tie), render a tie message.
 //             4.2.2.3) Otherwise, render a congratulatory message to which player has won - use the color name for the player, converting it to uppercase.
 //     4.3) Wait for the user to click a square
+
 // 5) Handle a player clicking a square:
 //     5.1) Obtain the index of the square that was clicked by either:
 //         5.1.1) "Extracting" the index from an id assigned to the element in the HTML, or
@@ -41,3 +44,103 @@ console.log('JQ is loaded ', $);
         
 // 6) Handle a player clicking the replay button:
 //     6.1) Do steps 4.1 (initialize the state variables) and 4.2 (render).
+
+/*----- constants -----*/
+// Model
+
+const COMBOS = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+];
+
+const LOOKUP = {
+    '1': 'X',
+    '-1': 'O',
+    'null': '',
+};
+
+/*----- app's state (variables) -----*/
+// Model
+
+let turn, winner, gameboard;
+
+
+/*----- cached element references -----*/
+// View
+
+const $gameboardEl = $('#gameboard');
+const $squareEls = $('.square');
+const $buttonEl = $('#reset-btn');
+const $messageEl = $('#message');
+
+
+/*----- event listeners -----*/
+// Controller
+
+$gameboardEl.on('click', handleMove);
+$buttonEl.on('click', handleInit);
+
+/*----- functions -----*/
+// Controler
+handleInit();
+function handleInit() {
+    // This function will do two things:
+    // 1) Start the game
+    //      A) create an empty gameboard
+    gameboard = new Array(9).fill().map(() => null);
+    //      | This is the same thing |                    |
+    //      V                        V                    V
+    // gameboard = [null, null, null, null, null, null, null, null, null]
+    
+    //      B) assign the turn - player 1 goes first - X goes first
+    turn = 1;
+    //      C) set the winner to false
+    winner = false;
+    //      D) visualize the state of the game to the DOM - render()
+    render();
+};
+
+function checkWinner() {
+    // compare the position of the player pieces(1 or -1) in combos array
+    for(let i = 0; i < COMBOS.length; i++) {
+        if(Math.abs(
+            gameboard[COMBOS[i][0]] + 
+            gameboard[COMBOS[i][1]] + 
+            gameboard[COMBOS[i][2]]) === 3) {
+            return gameboard[COMBOS[i][0]];
+        }
+    } if(gameboard.includes(null)) return false;
+    return 'T'
+};
+
+function handleMove(event) {
+    const position = event.target.dataset.index;
+    if(winner || gameboard[position]) return;
+    gameboard[position] = turn;
+    // check to see for winner
+    winner = checkWinner();
+    turn *= -1;
+    render();
+};
+
+
+function render() {
+    // render is going to look at the gameboard array
+    gameboard.forEach(function(value, index) {
+        $($squareEls[index]).text(LOOKUP[value])
+    });
+    // render will also update our message based on the turn or if there is a winner
+    if(!winner) {
+        $messageEl.text(`It's Player ${LOOKUP[turn]}'s Turn`);
+    } else if (winner === 'T') {
+        $messageEl.text('Tie Game');
+    } else {
+        $messageEl.text(`Congratulations ${LOOKUP[winner]} Wins!`)
+    }
+};
